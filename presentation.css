@@ -1,0 +1,130 @@
+a:visited {
+    color: blue;
+}
+
+img.figure {
+    padding-left: 80px;
+    width: 640px;
+}
+
+div.part, div.slide {
+    min-height: 500px;
+}
+
+div.part h2 {
+    margin: 2px;
+    padding: 5px;
+    border: 3px solid black;
+    background-color: blue;
+    color: white;
+}
+
+div.slide h3 {
+    margin: 2px;
+    padding: 5px;
+    border: 2px solid gray;
+    background-color: #00bfff;
+}
+
+pre.man {
+    padding: 5px;
+    font: fixed;
+    background-color: tan;
+    font-size: 12px;
+}
+
+pre.outline {
+    font: fixed;
+    font-size: 20px;
+}
+
+pre.python {
+    padding: 5px;
+    background-color: #d8bfd8;
+    font: fixed;
+}
+
+pre.shell {
+    padding: 5px;
+    font: fixed;
+    background-color: black;
+    color: lime;
+}
+
+p.note:before {
+    content: "NOTE: ";
+}
+p.note {
+    padding-left: 50px;
+    padding-right: 50px;
+    font-size: 0.8em;
+}
+
+table {
+    margin-top: 20px;
+    margin-left: 10px;
+    table-layout: fixed;
+    width: 90%;
+    border-collapse: collapse;
+    border: 2px solid blue;
+}
+
+table th, table td {
+    padding: 5px;
+}
+
+table tr:nth-child(even) {
+    background-color: #c0c0c0;
+}
+
+table#code-size th, table#code-size td {
+    text-align: right;
+}
+
+table#code-size td:nth-child(5) {
+    text-align: center;
+}
+
+table#code-size th:nth-child(1) {
+    width: 20%;
+}
+table#code-size th:nth-child(2) {
+    width: 15%;
+}
+table#code-size th:nth-child(3) {
+    width: 15%;
+}
+table#code-size th:nth-child(4) {
+    width: 15%;
+}
+table#code-size th:nth-child(5) {
+    width: 35%;
+}
+
+
+table#smartier th:nth-child(1) {
+    width: 20%;
+}
+table#smartier th:nth-child(2) {
+    width: 15%;
+}
+table#smartier th:nth-child(3) {
+    width: 65%;
+}
+
+table#star-arch td {
+    text-align: center;
+}
+table#star-arch td:nth-child(4),
+table#star-arch th:nth-child(4) {
+    border-left: 2px solid blue;
+}
+
+table#arch-views th:nth-child(1) {
+    width: 30%;
+}
+table#arch-views th:nth-child(2) {
+    width: 70%;
+}
+
+/**/
