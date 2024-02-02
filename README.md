@@ -3,14 +3,16 @@ Presentations on micropython and raspberrpy pico
 
 ## Part 1 - MicroPython and Pi Pico
 
-**Replacing the Arduino**
+**Evaluating Features and Performance**
 
-A Python sized for a microcontroller, running on a processor sized to run it...
-is this the silver bullet that could end development with the Arduino?
-This presentation is an overview of the features of micropython and the
-Pi Pico, focusing on development time and performance.
-From blinking an LED to interrupt driven quadrature decoding,
-can it keep up with the demands of a real-time embedde system?
+**(Can it replace Arduino?)**
+
+Python on a $4 microcontroller sounds promising - but how good is it?
+Make a list of features to test, attempt some quick demos starting from the
+offical examples, measure performance, investigate where slow.
+From blinking an LED with GPIO to an interrupt driven quadrature decoder,
+this presentation covers the process of evaluating MicroPython on the pi pico
+focusing on performance and developer effort.
 
 
 ## Part 2 - PIO Peripheral of the Raspberry Pi Pico

@@ -16,7 +16,7 @@
 <h1>(Can it replace Arduino?)</h1>
 
 <pre class="title">
-COhPy Presentation - 2024-??-??
+COhPy Presentation - 2024-02-??
 
 NB
  * Exploration process is shown
@@ -61,6 +61,7 @@ NB
 <pre class="outline">
 - Hardware
   - The classic Uno R3
+  - 32k flash, 2k ram, 16 MHz CPU (8 bit)
   - <a href="https://en.wikipedia.org/wiki/List_of_Arduino_boards_and_compatible_systems">wp: List of Arduino boards</a>
         <a href="https://en.wikipedia.org/wiki/List_of_Arduino_boards_and_compatible_systems">and compatible systems</a>
 - IDE
@@ -76,36 +77,6 @@ NB
 </pre>
 
 <br style="clear: both" />
-
-</div>
-<!--++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
-<div class="part slide">
-<h2>Overview: Criteria For Success</h2>
-
-<img src="FRDM-K64F_BD.png" style="height: 200px" />
-<img src="metro-m4-express.jpg" style="height: 200px" />
-<br style="clear: both" />
-
-<pre class="outline">
-- Replace these boards
-  - K64F and SAMD51 (Cortex-M4F)
-  - Uno R3 shield compatible
-  - FreeRTOS + C, bare metal + C++, SWD
-
-- Typical applications
-  - Standard peripherals + new drivers
-  - Real-time control loops (100 Hz)
-  - Interrupts (10 kHz)
-  - Data acquisition (1 MHz)
-
-- Productivity boost
-  - High level language (Fast code / test cycle)
-  - Support large projects (namespaces, classes, OOP)
-  - Batteries available
-    - Packages
-    - Drivers
-</pre>
-
 
 </div>
 <!--++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
@@ -161,6 +132,37 @@ NB
   - +$1 H = headers vs castellated
 
 - Other boards using rp2040 / 16M flash...
+</pre>
+
+
+</div>
+<!--++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
+<div class="part slide">
+<h2>Overview: Criteria For Success</h2>
+
+<img src="FRDM-K64F_BD.png" style="height: 200px" />
+<img src="metro-m4-express.jpg" style="height: 200px" />
+<br style="clear: both" />
+
+<pre class="outline">
+- Replace these boards
+  - K64F and SAMD51 (Cortex-M4F)
+    - 512k flash, 192k ram, 120 MHz CPU (32 bit)
+  - Uno R3 shield compatible
+  - FreeRTOS + C, bare metal + C++, SWD
+
+- Typical applications
+  - Standard peripherals + new drivers
+  - Real-time control loops (100 Hz)
+  - Interrupts (10 kHz)
+  - Data acquisition (1 MHz)
+
+- Productivity boost
+  - High level language (Fast code / test cycle)
+  - Support large projects (namespaces, classes, OOP)
+  - Batteries available
+    - Packages
+    - Drivers
 </pre>
 
 
