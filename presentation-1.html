@@ -11,11 +11,17 @@
 
 <!--++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
 <div class="part slide">
-<h1>MicroPython and Pi Pico </h1>
-<h2>Repllacing the Arduino</h2>
+<h1>MicroPython and Pi Pico</h1>
+<h1>Evaluating Features and Performance</h1>
+<h1>(Can it replace Arduino?)</h1>
 
 <pre class="title">
 COhPy Presentation - 2024-??-??
+
+NB
+ * Exploration process is shown
+ * Dead ends and circle backs
+ * Stable dev environment is out of scope
 </pre>
 
 
@@ -93,8 +99,8 @@ COhPy Presentation - 2024-??-??
   - Data acquisition (1 MHz)
 
 - Productivity boost
-  - High level language = Fast code / test cycle
-  - Serious project size (namespaces, classes, OOP)
+  - High level language (Fast code / test cycle)
+  - Support large projects (namespaces, classes, OOP)
   - Batteries available
     - Packages
     - Drivers
@@ -125,7 +131,7 @@ COhPy Presentation - 2024-??-??
   - Desktop version
   - CircuitPython (+friendly features, -unsafe features)
   - micropython-lib
-  - upip	
+  - mip (mip installs package)
 </pre>
 
 </div>
@@ -136,6 +142,7 @@ COhPy Presentation - 2024-??-??
 <img src="four_picos.jpg"
  style="height: 200px; float: right"
 /><!-- transform: rotate(-90deg) -->
+<img src="rp2040.jpg" style="height: 100px; float: right; clear: both">
 
 <pre class="outline">
 - rp2040 processor
@@ -188,17 +195,28 @@ COhPy Presentation - 2024-??-??
 </div>
 <!--++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
 <div class="part slide">
-<h2>Download Latest PDFs</h2>
+<h2>Download Latest Docs</h2>
 
 <pre class="outline">
+PDFs
+- "Raspberry Pi Pico Pinout"     (  1 page)
 - "Raspberry Pi Pico Python SDK" ( 50 pages)
 - "Raspberry Pi Pico Datasheet"  ( 30 pages)
 - "Raspberry Pi Pico C/C++ SDK"  (200 pages)
 - "RP2040 Datasheet"             (650 pages)
-- "Raspberry Pi Pico Pinout"
-- https://github.com/micropython/micropython/tree/master/ports/rp2
-
 (SAM D5x/E5x = 2150 pages, K64 Sub-Family = 1800 pages)
+
+Source code
+- https://github.com/micropython/micropython/tree/master/ports/rp2
+- https://github.com/raspberrypi/pico-micropython-examples
+
+And more
+- https://github.com/raspberrypi/pico-sdk
+- https://github.com/raspberrypi/pico-examples
+- https://github.com/raspberrypi/picotool
+...
+- https://github.com/raspberrypi/pico-bootrom
+- https://github.com/raspberrypi/pico-tflmicro
 </pre>
 
 
@@ -362,7 +380,7 @@ paste mode; Ctrl-C to cancel, Ctrl-D to finish
 === <b>import machine</b>
 === <b>import time</b>
 === <b>NREPS = 1_000</b>
-=== <b>led = machine.Pin("LED", machine.Pin.OUT)</b>
+=== <b>led = machine.Pin('LED', machine.Pin.OUT)</b>
 === <b>t0 = time.ticks_us()</b>
 === <b>for i in range(NREPS):</b>
 === <b>    led.on()</b>  # Or value(1) or high() or (1) or toggle()
@@ -744,20 +762,22 @@ import time
 from machine import Pin, Timer, mem32
 from micropython import const
 
-FREQ = 40_000
+FREQ = 5_000
 
 qe_a = Pin(12, Pin.IN, Pin.PULL_UP)
 qe_b = Pin(13, Pin.IN, Pin.PULL_UP)
 
+</b># Transitions indexed by ABA'B' (old state, new state)<b>
 qe_state = array.array('i', (0 for i in range(18)))
+</b># Gray code 00, 01, 11, 10, 00<b>
 for osns in (0b0001, 0b0111, 0b1110, 0b1000):
     qe_state[osns] = +1
 for osns in (0b0010, 0b1011, 0b1101, 0b0100):
     qe_state[osns] = -1
 
-#@micropython.native
+</b>#@micropython.native<b>
 @micropython.viper
-def qe_tick(pin):
+def qe_tick(tmr):
     GPIO_IN = const(0xd000_0004)  # SIO.GPIO_IN
     qs = ptr32(qe_state)
     os = qs[16]
@@ -769,14 +789,15 @@ def qe_tick(pin):
 
 timmy = Timer(freq=FREQ, mode=Timer.PERIODIC, callback=qe_tick)
 
-#@micropython.native -- locks after first print
+</b>#@micropython.native -- locks after first print<b>
 def main_loop():
     ic = 0
     t0 = time.ticks_us()
     while True:
-	ic += 1
+	ic += 1  </b># Idle Count - ie not busy interrupting<b>
 	t1 = time.ticks_us()
 	if time.ticks_diff(t1, t0) < 1_000_000:
+            </b># Output 1/sec<b>
 	    continue
 	print(ic, qe_state[17])
 	t0 = t1
@@ -826,13 +847,14 @@ FREQ (kHz)   idle count/sec
 <div class="part slide">
 <h2>ST7789 240x320 2.0" TFT</h2>
 
-<img src="st7789.png" style="float right" height="200px" />
+<img src="st7789.png" style="float: right" height="200px" />
 
 <pre class="outline">
 - SPI interface
 - uSD card
 
-- https://github.com/peterhinch/micropython-nano-gui
+- https://github.com/peterhinch/
+	micropython-nano-gui
   - draw to 4-bit FrameBuffer, refresh all
   - 12+ drivers - LCD, OLED, ePaper
   - Also micro-gui supporting input
@@ -886,16 +908,17 @@ import gc
 
 from drivers.st7789.st7789_4bit import ST7789 as SSD
 
-# Backlight control
+</b># Backlight control<b>
 bl_pin = Pin(6, Pin.OUT, value=1)
 bl_pwm = PWM(bl_pin)
 bl_pwm.freq(1_000)
 bl_pwm.duty_u16(45_000)
 
 dc_pin = Pin(7, Pin.OUT, value=0)
-rst_pin = Pin(14, Pin.OUT, value=1)  # n/c (SDCS)
+rst_pin = Pin(14, Pin.OUT, value=1)  </b># n/c (SDCS)<b>
 cs_pin = Pin(9, Pin.OUT, value=1)
 
+</b># Sweep memory before creating graphics buffer<b>
 gc.collect()
 
 spi = SPI(1,
@@ -917,6 +940,7 @@ from gui.core.nanogui import refresh
 
 slider_1 = ADC(28)
 
+</b># Mystify-style screen saver<b>
 class LineSaver:
     def __init__(self, W=240, H=320):
         self.a = array('i', [20, +1, W, 30, +3, H])
@@ -938,6 +962,7 @@ class LineSaver:
         color = 1
         while True:
             t0 = time.ticks_us()
+            </b># Update backlight value<b>
             bl_pwm.duty_u16(slider_1.read_u16())
             for i in range(steps_per_refresh):
 		self.move(self.a)
@@ -946,9 +971,9 @@ class LineSaver:
 			 self.b[0], self.b[3],
 			 color)
 		color = (color + 1) & 15
-            t1 = time.ticks_us()
+            t1 = time.ticks_us()  </b># Time to draw lines<b>
             refresh(ssd)
-            t2 = time.ticks_us()
+            t2 = time.ticks_us()  </b># + refresh display<b>
             a = time.ticks_diff(t1, t0)
             b = time.ticks_diff(t2, t1)
             c = a + b
@@ -976,7 +1001,7 @@ LineSaver().run(ssd, 3)
 </div>
 <!--++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
 <div class="part slide">
-<h2></h2>
+<h2>Memory Use and Garbage Collection</h2>
 
 <pre class="outline">
 >>> <b>import micropython</b>
@@ -1011,14 +1036,13 @@ GC memory layout; from 20014b80:
 00024000: ..........................h=....................................
        (28 lines all free)
 0002b400: ........
-
-
 </pre>
+
 
 </div>
 <!--++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
 <div class="part slide">
-<h2></h2>
+<h2>Byte Compiling Off-Target</h2>
 
 <pre class="outline">
 https://docs.micropython.org/en/latest/reference/mpyfiles.html
@@ -1031,7 +1055,10 @@ https://docs.micropython.org/en/latest/reference/mpyfiles.html
 
 <pre class="python">
 >>> <b>sys.implementation</b>
-(name='micropython', version=(1, 21, 0), _machine='Raspberry Pi Pico W with RP2040', _mpy=4358)
+(name='micropython',
+ version=(1, 21, 0),
+ _machine='Raspberry Pi Pico W with RP2040',
+ _mpy=4358)
 
 # (cut-paste code snippet from mpyfiles.html)
 
@@ -1118,7 +1145,7 @@ $ <b>hexdump -C color_setup.mpy</b>
 </div>
 <!--++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
 <div class="part slide">
-<h2></h2>
+<h2>Build MicroPython With Additional Packages</h2>
 
 <pre class="outline">
 https://docs.micropython.org/en/latest/reference/manifest.html
@@ -1126,10 +1153,464 @@ https://docs.micropython.org/en/latest/reference/manifest.html
 - Embedded in firmware
 - Less flash, CPU, and RAM used on target
 - Bytecode executed from flash
+
+TODO - example...
 </pre>
 
 
+</div>
+<!--++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
+<div class="part slide">
+<h2>NeoPixel Library</h2>
+
+<pre class="outline">
+&gt; Worked once? but library resets GPIO config each time...
+&gt; 3.3V to 5V output shifted with "not" gate, pre-inverted
+&gt; by configuring GPIO output,
+
+gpio_outover(i, IO_BANK0_GPIO21_CTRL_OUTOVER_VALUE_INVERT);
+
+#define IO_BANK0_BASE _u(0x40014000)
+
+#define IO_BANK0_GPIO21_CTRL_OFFSET _u(0x000000ac)
+
+#define IO_BANK0_GPIO21_CTRL_OUTOVER_LSB          _u(8)
+#define IO_BANK0_GPIO21_CTRL_OUTOVER_VALUE_NORMAL _u(0x0)
+#define IO_BANK0_GPIO21_CTRL_OUTOVER_VALUE_INVERT _u(0x1)
+#define IO_BANK0_GPIO21_CTRL_OUTOVER_VALUE_LOW    _u(0x2)
+#define IO_BANK0_GPIO21_CTRL_OUTOVER_VALUE_HIGH   _u(0x3)
 </pre>
+
+<pre class="python">
+>>> x = 0x40014000 + 21 * 8 + 4
+>>> hex(mem32[x])
+'0x5'
+>>> mem32[x] |= (0x1 << 8)
+>>> hex(mem32[x])
+'0x105'
+
+np = neopixel.NeoPixel(machine.Pin(21), n=68, bpp=3, timing=1)
+np.fill((50, 100, 50))  # blue, red, green
+np.write()
+</pre>
+
+
+</div>
+<!--++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
+<div class="part slide">
+<h2>NeoPixel PIO Example</h2>
+
+<pre class="python">
+<b>import array
+import time
+from machine import Pin
+import rp2
+
+</b># Copy-pasted from Pi Pico Python SDK PDF,
+# 3.9.2. WS2812 LED (NeoPixel)<b>
+@rp2.asm_pio(sideset_init=rp2.PIO.OUT_LOW,
+             out_shiftdir=rp2.PIO.SHIFT_LEFT,
+             autopull=True,
+             pull_thresh=24)
+def ws2812_prog():
+    T1 = 2
+    T2 = 5
+    T3 = 3
+    wrap_target()
+    label("bitloop")
+    out(x, 1) .side(0) [T3 - 1]
+    jmp(not_x, "do_zero") .side(1) [T1 - 1]
+    jmp("bitloop") .side(1) [T2 - 1]
+    label("do_zero")
+    nop() .side(0) [T2 - 1]
+    wrap()
+
+</b># 0xff0000 = green
+# 0x00ff00 = red
+# 0x0000ff = blue<b>
+@micropython.viper
+def rgb(r: int, g: int, b: int) -> int:
+    return (g << 16) + (r << 8) | b
+
+class NeoPixel:
+    def __init__(self, NLEDS=72):
+        self.NLEDS = NLEDS
+        self._buf = array.array('I', [ 0 for _ in range(NLEDS) ])
+        self._sm = sm = rp2.StateMachine(0,
+                                         ws2812_prog,
+                                         freq=8_000_000,
+                                         sideset_base=Pin(21))
+        self._sm.active(True)
+
+    @micropython.viper
+    def fill(self, rgb: int):
+        p = ptr32(self._buf)
+        n = int(self.NLEDS)
+        for i in range(n):
+            p[i] = rgb
+
+    def gray(self, g: int):
+        self.fill(rgb(g, g, g))
+
+    def write(self):
+        self._sm.put(self._buf, 8)
+        
+np = NeoPixel()
+
+</b># Invert GP21 output<b>
+from machine import mem32
+x = 0x40014000 + 21 * 8 + 4
+mem32[x] |= (0x1 << 8)
+
+colors = [  </b># From micropython-nano-gui/gui/core/colors<b>
+    rgb(0, 0, 0),	# black
+    rgb(0, 255, 0),	# green
+    rgb(255, 0, 0),	# red
+    rgb(140, 0, 0),	# light-red
+    rgb(0, 0, 255),	# blue
+    rgb(255, 255, 0),	# yellow
+    rgb(100, 100, 100),	# gray
+    rgb(255, 0, 255),	# magenta
+    rgb(0, 255, 255),	# cyan
+    rgb(0, 100, 0),	# light-green
+    rgb(0, 80, 0),	# dark-green
+    rgb(0, 0, 90),	# dark-blue
+    rgb(255, 255, 255), # white
+]
+
+</b># rotary encoder - unstable?<b>
+
+from machine import ADC
+btn_1 = Pin(4, Pin.IN, Pin.PULL_DOWN)
+btn_2 = Pin(5, Pin.IN, Pin.PULL_UP)
+slider_1 = ADC(28)  # Channel 0-4 or Pin 26-28
+ci = 0
+while True:
+    </b>#gray = slider_1.read_u16() >> 8
+    #np.gray(gray)<b>
+    if btn_1.value():
+        time.sleep(0.5)
+        ci += 1
+    if not btn_2.value():
+        time.sleep(0.5)
+        ci -= 1
+    ci %= len(colors)
+    np.fill(colors[ci])
+    np.write()
+    time.sleep(0.1)
+</b>
+</pre>
+
+</div>
+<!--++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
+<div class="part slide">
+<h2>Rotary Encoder - Revisited</h2>
+
+<pre class="outline">
+- Unstable with neopixel demo
+  - Skips counts
+  - Faster in one direction
+
+- Repeated first encoder demo
+
+- micropython/ports/rp2/machine_pin.c
+  - mp_hal_pin_interrupt()
+    irq->base.ishard = hard;
+
+- Search --&gt; forums --&gt;
+    https://forum.micropython.org/viewtopic.php?t=13002
+    https://github.com/orgs/micropython/discussions/13187
+  - Default "soft" triggers a scheduled task
+  - "hard" executes immediately
+    - But memory allocation prohiibted
+
+- UTSL - does rp2 port support?
+  ports/rp2/machine_pin.c:STATIC void gpio_irq(void)
+  for 4x ports, for 8x pins
+    ack irq (1 of high, low, rising, falling) (no level intrs)
+    shared/runtime/mpirq.c::mp_irq_handler
+        "Uncaught exception in IRQ callback handler"
+</pre>
+
+<pre class="python">
+# First half of code unchanged
+<b>import array
+import time
+from machine import Pin
+import rp2
+
+@rp2.asm_pio(sideset_init=rp2.PIO.OUT_LOW,
+             out_shiftdir=rp2.PIO.SHIFT_LEFT,
+             autopull=True,
+             pull_thresh=24)
+def ws2812_prog():
+    T1 = 2
+    T2 = 5
+    T3 = 3
+    wrap_target()
+    label("bitloop")
+    out(x, 1) .side(0) [T3 - 1]
+    jmp(not_x, "do_zero") .side(1) [T1 - 1]
+    jmp("bitloop") .side(1) [T2 - 1]
+    label("do_zero")
+    nop() .side(0) [T2 - 1]
+    wrap()
+
+@micropython.viper
+def rgb(r: int, g: int, b: int) -> int:
+    return (g << 16) + (r << 8) | b
+
+class NeoPixel:
+    def __init__(self, NLEDS=72):
+        self.NLEDS = NLEDS
+        self._buf = array.array('I', [ 0 for _ in range(NLEDS) ])
+        self._sm = sm = rp2.StateMachine(0,
+                                         ws2812_prog,
+                                         freq=8_000_000,
+                                         sideset_base=Pin(21))
+        self._sm.active(True)
+
+    @micropython.viper
+    def fill(self, rgb: int):
+        p = ptr32(self._buf)
+        n = int(self.NLEDS)
+        for i in range(n):
+            p[i] = rgb
+
+    def gray(self, g: int):
+        self.fill(rgb(g, g, g))
+
+    def write(self):
+        self._sm.put(self._buf, 8)
+        
+np = NeoPixel()
+
+# Invert GP21 output
+from machine import mem32
+x = 0x40014000 + 21 * 8 + 4
+mem32[x] |= (0x1 << 8)
+
+colors = [  # From micropython-nano-gui/gui/core/colors
+    rgb(0, 0, 0),	# black
+    rgb(0, 255, 0),	# green
+    rgb(255, 0, 0),	# red
+    rgb(140, 0, 0),	# light-red
+    rgb(0, 0, 255),	# blue
+    rgb(255, 255, 0),	# yellow
+    rgb(100, 100, 100),	# gray
+    rgb(255, 0, 255),	# magenta
+    rgb(0, 255, 255),	# cyan
+    rgb(0, 100, 0),	# light-green
+    rgb(0, 80, 0),	# dark-green
+    rgb(0, 0, 90),	# dark-blue
+    rgb(255, 255, 255), # white
+]
+</b># Begin new code
+
+# Configure RGB pins (will toggle for debug)
+<b>SIO_BASE = const(0xd000_0000)
+GPIO_OUT_SET = const(SIO_BASE + 0x014)
+GPIO_OUT_CLR = const(SIO_BASE + 0x018)
+
+R = machine.Pin(18, machine.Pin.OUT)
+G = machine.Pin(19, machine.Pin.OUT)
+B = machine.Pin(20, machine.Pin.OUT)
+RGB = const(0b111 << 18)
+mem32 = machine.mem32
+
+renc_dir = Pin(26, Pin.IN, Pin.PULL_UP)
+renc_step = Pin(27, Pin.IN, Pin.PULL_UP)
+</b># Try swapping A,B signals
+#renc_dir = Pin(27, Pin.IN, Pin.PULL_UP)
+#renc_step = Pin(26, Pin.IN, Pin.PULL_UP)<b>
+
+renc_count = 0
+t0 = time.ticks_us()
+
+def renc_intrhand(pin):
+    mem32[GPIO_OUT_CLR] = RGB
+    global renc_count, t0
+    d = renc_dir.value()
+    t1 = time.ticks_us()
+    if time.ticks_diff(t1, t0) < 30_000:
+        # Ignore for 30 ms (debounce)
+        mem32[GPIO_OUT_SET] = RGB
+        return
+    t0 = t1
+    </b>#xyzzy  # Force a NameError<b>
+    if d:
+        renc_count += 1
+    else:
+        renc_count -= 1
+    mem32[GPIO_OUT_SET] = RGB
+
+irq = renc_step.irq(renc_intrhand, Pin.IRQ_FALLING) #, True)
+print(irq)
+
+ci = 0
+while True:
+    print(f'{renc_count=}')
+    ci = renc_count % len(colors)
+    np.fill(colors[ci])
+    np.write()
+    time.sleep(0.5)
+</b>
+</pre>
+
+pics:
+	junk / noise on both inputs
+	interrupt processing time
+
+	schmitt trigger? by default, not in micropython source
+		PADS_BANK0 GP0-29 at 0x04-78, bit 0x2
+		0x4001c000 (defined as PADS_BANK0_BASE in SDK).
+
+>>> bin(mem32[0x4001c000 + 4 + 4 * 26])
+'0b1011010'
+
+>>> bin(mem32[0x4001c000 + 4 + 4 * 27])
+'0b1011010'
+
+
+</div>
+<!--++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
+<div class="part slide">
+<h2>Quadrature Encoder Interrupts</h2>
+
+<pre class="python">
+# First half same code again
+<b>import array
+import time
+from machine import Pin
+import rp2
+
+@rp2.asm_pio(sideset_init=rp2.PIO.OUT_LOW,
+             out_shiftdir=rp2.PIO.SHIFT_LEFT,
+             autopull=True,
+             pull_thresh=24)
+def ws2812_prog():
+    T1 = 2
+    T2 = 5
+    T3 = 3
+    wrap_target()
+    label("bitloop")
+    out(x, 1) .side(0) [T3 - 1]
+    jmp(not_x, "do_zero") .side(1) [T1 - 1]
+    jmp("bitloop") .side(1) [T2 - 1]
+    label("do_zero")
+    nop() .side(0) [T2 - 1]
+    wrap()
+
+@micropython.viper
+def rgb(r: int, g: int, b: int) -> int:
+    return (g << 16) + (r << 8) | b
+
+class NeoPixel:
+    def __init__(self, NLEDS=72):
+        self.NLEDS = NLEDS
+        self._buf = array.array('I', [ 0 for _ in range(NLEDS) ])
+        self._sm = sm = rp2.StateMachine(0,
+                                         ws2812_prog,
+                                         freq=8_000_000,
+                                         sideset_base=Pin(21))
+        self._sm.active(True)
+
+    @micropython.viper
+    def fill(self, rgb: int):
+        p = ptr32(self._buf)
+        n = int(self.NLEDS)
+        for i in range(n):
+            p[i] = rgb
+
+    def gray(self, g: int):
+        self.fill(rgb(g, g, g))
+
+    def write(self):
+        self._sm.put(self._buf, 8)
+        
+np = NeoPixel()
+
+# Invert GP21 output
+from machine import mem32
+x = 0x40014000 + 21 * 8 + 4
+mem32[x] |= (0x1 << 8)
+
+colors = [  # From micropython-nano-gui/gui/core/colors
+    rgb(0, 0, 0),	# black
+    rgb(0, 255, 0),	# green
+    rgb(255, 0, 0),	# red
+    rgb(140, 0, 0),	# light-red
+    rgb(0, 0, 255),	# blue
+    rgb(255, 255, 0),	# yellow
+    rgb(100, 100, 100),	# gray
+    rgb(255, 0, 255),	# magenta
+    rgb(0, 255, 255),	# cyan
+    rgb(0, 100, 0),	# light-green
+    rgb(0, 80, 0),	# dark-green
+    rgb(0, 0, 90),	# dark-blue
+    rgb(255, 255, 255), # white
+]
+
+</b># Copied from quadrature encoder demo<b>
+
+qe_state = array.array('i', (0 for i in range(18)))
+for osns in (0b0001, 0b0111, 0b1110, 0b1000):
+    qe_state[osns] = +1
+for osns in (0b0010, 0b1011, 0b1101, 0b0100):
+    qe_state[osns] = -1
+
+@micropython.viper
+def qe_tick(pin):
+    GPIO_IN = const(0xd000_0004)  # SIO.GPIO_IN
+    qs = ptr32(qe_state)
+    os = qs[16]
+    #ns = (mem32[GPIO_IN] >> 26) & 0b11
+    ns = (ptr32(GPIO_IN)[0] >> 26) & 0b11
+    osns = (os << 2) + ns
+    qs[17] += qs[osns]
+    qs[16] = ns
+
+</b># Configure A + B input pins<b>
+renc_dir = Pin(26, Pin.IN, Pin.PULL_UP)
+renc_step = Pin(27, Pin.IN, Pin.PULL_UP)
+
+</b># Interrupt on both pins, rising and falling edges
+# And soft interrupts are OK, even preferred<b>
+renc_dir.irq(qe_tick, Pin.IRQ_FALLING | Pin.IRQ_RISING, False)
+renc_step.irq(qe_tick, Pin.IRQ_FALLING | Pin.IRQ_RISING, False)
+
+ci = 0
+while True:
+    renc_count = qe_state[17] // 4  </b># 4 edges / click<b>
+    print(f'{renc_count=}')
+    ci = renc_count % len(colors)
+    np.fill(colors[ci])
+    np.write()
+</b>
+</pre>
+
+</div>
+<!--++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
+<div class="part slide">
+<h2>Power Supply Concerns</h2>
+
+<img src="ac-dc-step-down-buck-converter.jpg"
+	style="float: right" height="200px" />
+
+<pre class="outline">
+Generic "AC DC Step Down Buck Converter"
+
+72 neopixels x 50 mA each = 3.5A
+
+(3.5A) x (200nsec) / (?F) = (.3V)
+>>> 3.5 * 200e-9 / 0.3
+==&gt; ~2.3uF
+
+try 3.3, 220 (already? 470)
+
+TODO - Adjust LEDs in batches...
+</pre>
+
 
 </div>
 <!--++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
@@ -1186,53 +1667,89 @@ https://docs.micropython.org/en/latest/reference/manifest.html
 </pre>
 
 </div>
-<!--++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
-<div class="part slide">
-<h2></h2>
-
-<pre class="outline">
-
-</pre>
-
-</div>
-<!--++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
-<div class="part slide">
-<h2></h2>
-
-<pre class="outline">
-
-</pre>
-
-</div>
-<!--++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
-<div class="part slide">
-<h2></h2>
-
-<pre class="outline">
-
-</pre>
-
-</div>
-<!--++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
-<div class="part slide">
-<h2></h2>
-
-<pre class="outline">
-
-</pre>
-
-</div>
-<!--++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
-<div class="part slide">
-<h2></h2>
-
-<pre class="outline">
-
-</pre>
-
-</div>
 
 
+https://www.youtube.com/watch?v=hHec4qL00x0
+        Witing fast and efficient MicroPython
+        Damien George - PyCon AU 2018
+
+LED 55kHz + fn locals + no globals.attrs + unroll + @native,
+        @viper ptr16 13-MHz
+        @asm_thumb 27+MHz (168-MHz mcu)
+
+readinto(buf) - 1.6 -> 20 MB/sec flash ints
+exec 100x C to Py
+
+nayuki - qr code gens
+micropython c stub generator - oliver robson(?)
+const
+mypy-cross -> .mpy
+freeze -> firmware
+time.ticks_us(), ticks_diff(...)
+
+
+multicore.
+
+
+
+https://datasheets.raspberrypi.com/rp2040/rp2040-datasheet.pdf
+
+
+        (string) theory physicsists + compsci
+        research - can haz python in microcontroller?
+        to run where python could not run before
+        minimal RAM tricks
+        pyboard - kickstarter
+        leon/sparc/rtems... in space!
+
+esp32 mid 2016?
+
+forth
+embedded / IoT / physical computing
+
+micropython.mem_info(1)
+import network
+towel.blinkenlights.nl:23 --> starwars! (asciimation)
+http_get http://micropython.org/ks/test.html
+json.
+`_`
+
+core language / micropython
+python libraries (limited avail / features)
+hardware / machine
+network
+
+(u)asyncio
+threading
+embedding - in any program...
+
+cost + low power
+MIT license
+
+resources for prototyping + ship
+
+correct operation
+fast enough execution - real-time control
+i/o caps + periphs
+
+https://docs.micropython.org/en/v1.9.3/pyboard/reference/speed_python.html
+https://docs.micropython.org/en/latest/esp32/tutorial/peripheral_access.html
+
+register types
+rw = read + write
+ro = read only
+wo = write only
+sc = set by cpu, then cleared by hw
+wc = set by hw, write 1 to clear
+
+all periphs 4KiB x 4 (r/w, xor, set, clr)
+SIO dedicated bus per core
+	cpuid = 0, 1.
+	FIFO 2x cores (32 bits x 8)
+	spinlocks
+	nvic x2, each core
+	gpio intrs only on 0-25.
+	wait for event, send event - cross-core
 
 </body>
 </html>
