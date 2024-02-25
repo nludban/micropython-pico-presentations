@@ -13,10 +13,12 @@
 <div class="part slide">
 <h1>MicroPython and Pi Pico</h1>
 <h1>Evaluating Features and Performance</h1>
-<h1>(Can it replace Arduino?)</h1>
+<h4>(Can it replace Arduino?)</h4>
+
+<img src="test-rig.png" style="height: 100px; float: right" />
 
 <pre class="title">
-COhPy Presentation - 2024-02-??
+COhPy Presentation - 2024-02-26
 
 NB
  * Exploration process is shown
@@ -368,6 +370,8 @@ docs.micropython.org:
 <div class="part slide">
 <h2>Blink the Pico's LED</h2>
 
+<img src="on-board-led.png" style="height: 100px; float: right" />
+
 <pre class="outline">
 - Green LED by the Pico's USB connector
 - Use a machine.Pin instance
@@ -402,6 +406,8 @@ paste mode; Ctrl-C to cancel, Ctrl-D to finish
 <!--++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
 <div class="part slide">
 <h2>Blink on External LED</h2>
+
+<img src="pin-18-led.svg" style="height: 200px; float: right" />
 
 <pre class="outline">
 - Add an LED and resistor to pin 18
@@ -451,6 +457,8 @@ Note: non-Wifi Pico LED is wired to GPIO25
 <!--++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
 <div class="part slide">
 <h2>Blink Three External LEDs</h2>
+
+<img src="pin-18-20-leds.svg" style="height: 200px; float: right" />
 
 <pre class="outline">
 - Clean up the code a bit
@@ -511,6 +519,8 @@ blink_rgb()
 <div class="part slide">
 <h2>Blink Three External LEDs - At Once!</h2>
 
+<img src="pin-18-20-leds.svg" style="height: 200px; float: right" />
+
 <pre class="outline">
 - MicroPython allows direct memory access
 - Pico peripherals' registers are memory mapped
@@ -553,6 +563,8 @@ blink_rgb()
 <!--++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
 <div class="part slide">
 <h2>Blink Three External LEDs - Viper</h2>
+
+<img src="pin-18-20-leds.svg" style="height: 200px; float: right" />
 
 <pre class="outline">
 - @micropython.viper function decorator
@@ -618,6 +630,8 @@ See also:
 <div class="part slide">
 <h2>Digital Input Pin</h2>
 
+<img src="pin-4-5-buttons.png" style="height: 100px; float: right" />
+
 <pre class="outline">
 - Button 1 from GP4 to +3v3
 - Button 2 from GP5 to GND
@@ -648,8 +662,10 @@ while True:
 <div class="part slide">
 <h2>Analog Input ADC</h2>
 
+<img src="pin-28-analog.svg" style="height: 200px; float: right" />
+
 <pre class="outline">
-- Variable resistor to 3v3 and GND, sense to GP28 (A3)
+- Variable resistor to 3v3 and GND, sense to GP28
 - ADC3 = VSYS/3, ACD4 = Temperature
 - Result 0-65535, scale 0-3.3V
 - Noisy and biased, see datasheet
@@ -682,13 +698,18 @@ ffff = 3.30
 <div class="part slide">
 <h2>Rotary Encoder - Pin Interrupt</h2>
 
+<img src="pin-26-27-rotary.png" style="height: 100px; float: right" />
+
 <img src="rotary-encoder-24-ppr.png" style="float: right" height="150px" />
+
+<img src="rotary-step-dir.png" style="height: 100px; float: right" />
 
 <pre class="outline">
 - 24 position rotary encoder
 - A = "Dir" to Pin 26
 - B = "Step" to Pin 27
 - Common to GND
+
 </pre>
 
 <pre class="python">
@@ -746,7 +767,11 @@ while True:
 <div class="part slide">
 <h2>Quadrature Encoder - Timer Polling</h2>
 
+<img src="pin-12-13-quadrature.png" style="height: 100px; float: right" />
+
 <img src="rotary-encoder-600-ppr.png" style="float: right" height="200px" />
+
+<img src="quadrature-a-b.png" style="height: 100px; float: right" />
 
 <pre class="outline">
 - 600 PPR quadrature encoder (2400 edges/rev)
@@ -755,7 +780,7 @@ while True:
 - Power +5v (!!!), GND
   - Open drain outputs
   - Pico digital inputs 5v tolerant
-    ***when powered on***
+    ***Only When Powered On***
 </pre>
 
 <pre class="python">
@@ -1165,6 +1190,10 @@ TODO - example...
 <div class="part slide">
 <h2>NeoPixel Library</h2>
 
+<img src="ws2812-rings.png" style="height: 100px; float: right" />
+
+<img src="pin-21-neopixel.png" style="height: 100px; float: right; clear: right" />
+
 <pre class="outline">
 &gt; Worked once? but library resets GPIO config each time...
 &gt; 3.3V to 5V output shifted with "not" gate, pre-inverted
@@ -1201,6 +1230,8 @@ np.write()
 <!--++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
 <div class="part slide">
 <h2>NeoPixel PIO Example</h2>
+
+<img src="pin-21-neopixel.png" style="height: 100px; float: right" />
 
 <pre class="python">
 <b>import array
@@ -1617,10 +1648,12 @@ TODO - Adjust LEDs in batches...
 </div>
 <!--++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
 <div class="part slide">
-<h2></h2>
+<h2>Next Steps</h2>
 
 <pre class="outline">
-
+- asyncio
+- network
+- C extensions (note board examples)
 </pre>
 
 </div>
@@ -1669,7 +1702,7 @@ TODO - Adjust LEDs in batches...
 </pre>
 
 </div>
-
+<!--
 
 https://www.youtube.com/watch?v=hHec4qL00x0
         Witing fast and efficient MicroPython
@@ -1689,20 +1722,9 @@ mypy-cross -> .mpy
 freeze -> firmware
 time.ticks_us(), ticks_diff(...)
 
-
 multicore.
 
-
-
 https://datasheets.raspberrypi.com/rp2040/rp2040-datasheet.pdf
-
-
-        (string) theory physicsists + compsci
-        research - can haz python in microcontroller?
-        to run where python could not run before
-        minimal RAM tricks
-        pyboard - kickstarter
-        leon/sparc/rtems... in space!
 
 esp32 mid 2016?
 
@@ -1711,7 +1733,7 @@ embedded / IoT / physical computing
 
 micropython.mem_info(1)
 import network
-towel.blinkenlights.nl:23 --> starwars! (asciimation)
+towel.blinkenlights.nl:23 => starwars! (asciimation)
 http_get http://micropython.org/ks/test.html
 json.
 `_`
@@ -1752,6 +1774,7 @@ SIO dedicated bus per core
 	nvic x2, each core
 	gpio intrs only on 0-25.
 	wait for event, send event - cross-core
+-->
 
 </body>
 </html>
