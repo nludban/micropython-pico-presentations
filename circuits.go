@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"math"
 	"os"
 	"strings"
 
@@ -245,8 +246,133 @@ func AnalogInput() {
 }
 
 
+func sincos(r, a int) (x, y int) {
+	phi := float64(-a) * math.Pi / 180.0
+	x = int(math.Round(float64(r) * math.Cos(phi)))
+	y = int(math.Round(float64(r) * math.Sin(phi)))
+	return
+}
+
+
+func Sector(c *svg.SVG, cx, cy, r, a1, a2 int) {
+	sx, sy := sincos(72, a1)
+	ex, ey := sincos(72, a2)
+	c.Arc(cx + sx, cy + sy,		// start
+		72, 72, 0,		// axis lengths and rotation
+		false, false,		// large? sweep?
+		cx + ex, cy + ey,	// end
+		"fill:gray;stroke:none")
+	c.Polygon(
+		[]int{ cx, cx + sx, cx + ex },
+		[]int{ cy, cy + sy, cy + ey },
+		"fill:gray;stroke:none")
+	return
+}
+
+
+func PolarText(c *svg.SVG, cx, cy, r, a int, s string) {
+	tx, ty := sincos(r, a)
+	c.Text(cx + tx, cy + ty, s, TextStyle("middle"))
+	return
+}
+
+
+func PolarSensor(c *svg.SVG, cx, cy, r, a int, name string) {
+	p1x, p1y := sincos(r, a)
+	p2x, p2y := sincos(r + 15, a + 5)
+	p3x, p3y := sincos(r + 15, a - 5)
+	c.Polygon(
+		[]int{ cx + p1x, cx + p2x, cx + p3x },
+		[]int{ cy + p1y, cy + p2y, cy + p3y },
+		"stroke:blue;fill:blue",
+	)
+	PolarText(c, cx, cy, r + 25, a + 15, name)
+	return
+}
+
+
+func PolarArrow(c *svg.SVG, cx, cy, r, as, ae int, label string) {
+	ao := ae - 5
+	at := ae - 20
+	ah := ae
+	if ae < as {
+		ao = ae + 5
+		at = ae + 20
+		as, ae = ae, as
+	}
+	h1x, h1y := sincos(r + 10, ao)
+	h2x, h2y := sincos(r, ah)
+	h3x, h3y := sincos(r - 10, ao)
+	sx, sy := sincos(r, as)
+	ex, ey := sincos(r, ae)
+	c.Arc(cx + sx, cy + sy,
+		r, r, 0,
+		false, false,
+		cx + ex, cy + ey,
+	)
+	c.Polyline(
+		[]int{ cx + h1x, cx + h2x, cx + h3x },
+		[]int{ cy + h1y, cy + h2y, cy + h3y })
+
+	PolarText(c, cx, cy, r + 20, at, label)
+}
+
+
+func RotaryStepDir() {
+	fout, _ := os.Create("rotary-step-dir.svg")
+
+	var c *svg.SVG = svg.New(fout)
+
+	width := 500
+	height := 250
+	c.Start(width, height)
+	c.Roundrect(0, 0, width, height, 15, 15,
+		"fill:snow;stroke:black;stroke-width:3")
+
+	c.Gstyle("fill:none;stroke:black;stroke-width:3")
+
+	cx := 125
+	cy := 150
+	Sector(c, cx, cy, 72, 90 + 10, 180 + 10)
+	Sector(c, cx, cy, 72, 270 + 10, 0 + 10)
+	c.Circle(cx, cy, 72)
+	c.Circle(cx, cy, 10, "fill:black")
+	PolarText(c, cx, cy, 40, 15 + 45 * 1, "1")
+	PolarText(c, cx, cy, 40, 15 + 45 * 3, "0")
+	PolarText(c, cx, cy, 40, 15 + 45 * 5, "1")
+	PolarText(c, cx, cy, 40, 15 + 45 * 7, "0")
+	PolarSensor(c, cx, cy, 75, 0, "Step")
+	PolarSensor(c, cx, cy, 75, 45, "Dir")
+	PolarArrow(c, cx, cy, 90, 120, 90, "(+1)")
+
+	cx = 350
+	cy = 150
+	Sector(c, cx, cy, 72, 0 - 10, 90 - 10)
+	Sector(c, cx, cy, 72, 180 - 10, 270 - 10)
+	c.Circle(cx, cy, 72)
+	c.Circle(cx, cy, 10, "fill:black")
+	PolarText(c, cx, cy, 40, -15 + 45 * 1, "0")
+	PolarText(c, cx, cy, 40, -15 + 45 * 3, "1")
+	PolarText(c, cx, cy, 40, -15 + 45 * 5, "0")
+	PolarText(c, cx, cy, 40, -15 + 45 * 7, "1")
+	PolarSensor(c, cx, cy, 75, 0, "Step")
+	PolarSensor(c, cx, cy, 75, 45, "Dir")
+	PolarArrow(c, cx, cy, 90, 90, 120, "(-1)")
+
+
+	c.Gend()
+	c.End()
+	
+	fout.Close()
+
+}
+
+
 func main() {
 	ExternalLED()
 	ThreeExternalLEDs()
 	AnalogInput()
+	RotaryStepDir()
 }
+
+/**/
