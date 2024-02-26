@@ -13,9 +13,11 @@
 <div class="part slide">
 <h1>MicroPython and Pi Pico</h1>
 <h1>Evaluating Features and Performance</h1>
-<h4>(Can it replace Arduino?)</h4>
 
-<img src="test-rig.png" style="height: 100px; float: right" />
+<img src="test-rig.png" style="height: 150px; float: right" />
+<img src="rgb-test.png" style="height: 150px; float: right; clear: both" />
+
+<h4>(Can it replace Arduino?)</h4>
 
 <pre class="title">
 COhPy Presentation - 2024-02-26
@@ -1369,6 +1371,19 @@ while True:
 </pre>
 
 <pre class="python">
+# schmitt trigger?
+# enabled by default, not in micropython source...
+#	PADS_BANK0 GP0-29 at 0x04-78, bit 0x2
+#	0x4001c000 (defined as PADS_BANK0_BASE in SDK).
+
+>>> <b>bin(mem32[0x4001c000 + 4 + 4 * 26])</b>
+'0b1011010'
+
+>>> <b>bin(mem32[0x4001c000 + 4 + 4 * 27])</b>
+'0b1011010'
+</pre>
+
+<pre class="python">
 # First half of code unchanged
 <b>import array
 import time
@@ -1480,6 +1495,7 @@ def renc_intrhand(pin):
         renc_count -= 1
     mem32[GPIO_OUT_SET] = RGB
 
+</b># Rising or falling, hard or soft...<b>
 irq = renc_step.irq(renc_intrhand, Pin.IRQ_FALLING) #, True)
 print(irq)
 
@@ -1493,19 +1509,15 @@ while True:
 </b>
 </pre>
 
-pics:
-	junk / noise on both inputs
-	interrupt processing time
+<img src="rotary-noise-1.png" style="height: 300px" />
+<img src="rotary-noise-5.png" style="height: 300px" />
+<img src="rotary-noise-2.png" style="height: 300px" />
+<img src="rotary-noise-3.png" style="height: 300px" />
+<img src="rotary-noise-4.png" style="height: 300px" />
 
-	schmitt trigger? by default, not in micropython source
-		PADS_BANK0 GP0-29 at 0x04-78, bit 0x2
-		0x4001c000 (defined as PADS_BANK0_BASE in SDK).
-
->>> bin(mem32[0x4001c000 + 4 + 4 * 26])
-'0b1011010'
-
->>> bin(mem32[0x4001c000 + 4 + 4 * 27])
-'0b1011010'
+<img src="intr-100-us.png" style="height: 300px" />
+<img src="intr-repeated.png" style="height: 300px" />
+<img src="intr-so-many.png" style="height: 300px" />
 
 
 </div>
@@ -1647,6 +1659,7 @@ try 3.3, 220 (already? 470)
 TODO - Adjust LEDs in batches...
 </pre>
 
+<img src="power-spike.png" style="height: 300px" />
 
 </div>
 <!--++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
@@ -1654,6 +1667,8 @@ TODO - Adjust LEDs in batches...
 <h2>Next Steps</h2>
 
 <pre class="outline">
+- boot.py, main.py (check button)
+- threading (2nd core)
 - asyncio
 - network
 - C extensions (note board examples)
@@ -1777,6 +1792,7 @@ SIO dedicated bus per core
 	nvic x2, each core
 	gpio intrs only on 0-25.
 	wait for event, send event - cross-core
+
 -->
 
 </body>
