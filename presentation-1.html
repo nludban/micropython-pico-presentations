@@ -120,6 +120,7 @@ NB
 <img src="rp2040.jpg" style="height: 100px; float: right; clear: both">
 
 <pre class="outline">
+- Released January, 2021
 - rp2040 processor
   - ARM Cortex-M0+ (dual core)
   - 125 MHz (133 - 200+)
@@ -190,13 +191,12 @@ NB
 - PWM
 - Timer
 - RTC
-- 8 PIO (next presentation)
+- 8 PIO (Presentation part 2)
 - Not (yet) in MicroPython
   - DMA
   - USB host / device
 </pre>
 
-<br style="clear: both" />
 
 </div>
 <!--++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
@@ -615,12 +615,14 @@ blink_rgb(5_000_000)</b>
 
 See also:
 - micropython.org: <a href="https://docs.micropython.org/en/v1.9.3/pyboard/reference/speed_python.html#the-viper-code-emitter">Maximising MicroPython Speed</a>
+
 - YouTube: <a href="https://www.youtube.com/watch?v=hHec4qL00x0"
         >Writing fast and efficient MicroPython</a>
            <a href="https://www.youtube.com/watch?v=hHec4qL00x0"
         >Damien George &#x2022; PyCon AU 2018</a>
   - From 55 kHz to 27 MHz
   - Other methods: native, loop unroll, assembly
+
 - Manually collect garbage when idle:
     import gc
     gc.collect()
@@ -637,6 +639,7 @@ See also:
 <pre class="outline">
 - Button 1 from GP4 to +3v3
 - Button 2 from GP5 to GND
+- Works later (in/out, options; not in/out | options)
 </pre>
 
 <pre class="python">
@@ -772,11 +775,12 @@ while True:
 <div class="part slide">
 <h2>Quadrature Encoder - Timer Polling</h2>
 
-<img src="pin-12-13-quadrature.png" style="height: 100px; float: right" />
+<img src="quadrature-a-b.svg" style="height: 150px; float: right" />
 
-<img src="rotary-encoder-600-ppr.png" style="float: right" height="200px" />
+<img src="rotary-encoder-600-ppr.png" style="float: right; clear: both" height="200px" />
 
-<img src="quadrature-a-b.png" style="height: 100px; float: right" />
+<!-- img src="pin-12-13-quadrature.png" style="height: 100px; float: right" / -->
+
 
 <pre class="outline">
 - 600 PPR quadrature encoder (2400 edges/rev)
@@ -1509,15 +1513,60 @@ while True:
 </b>
 </pre>
 
-<img src="rotary-noise-1.png" style="height: 300px" />
-<img src="rotary-noise-5.png" style="height: 300px" />
-<img src="rotary-noise-2.png" style="height: 300px" />
-<img src="rotary-noise-3.png" style="height: 300px" />
-<img src="rotary-noise-4.png" style="height: 300px" />
+<!-- img src="rotary-noise-1.png" style="height: 300px" / -->
 
-<img src="intr-100-us.png" style="height: 300px" />
-<img src="intr-repeated.png" style="height: 300px" />
-<img src="intr-so-many.png" style="height: 300px" />
+<ul>
+  <li><p>
+	<img src="rotary-noise-5.png" style="height: 300px; float: right" />
+	Connect analyzer probe to one RGB LED pin.
+	"Click" knob once and see many glitches on one rotary encoder output.
+	Check duration of interrupt handler ("low" when processing, returns
+	quickly during debounce).
+	100 us time scale.
+  </p></li>
+  <li style="clear: both"><p>
+	<img src="rotary-noise-2.png" style="height: 300px; float: right" />
+	Zoom out, click several times, see more glitches.
+	50 ms time scale.
+  </p></li>
+  <li style="clear: both"><p>
+	<img src="rotary-noise-3.png" style="height: 300px; float: right" />
+	Click slowly, still see glitches.
+	50 ms time scale.
+  </p></li>
+  <li style="clear: both"><p>
+	<img src="rotary-noise-4.png" style="height: 300px; float: right" />
+	Click fast, more glitches.
+	50 ms time scale.
+  </p></li>
+  <li style="clear: both"><p>
+	<img src="intr-100-us.png" style="height: 300px; float: right" />
+	Looking at interrupt latency.
+	100 us time scale.
+  </p></li>
+  <li style="clear: both"><p>
+	<img src="intr-repeated.png" style="height: 300px; float: right" />
+	Variation in interrupt latency?
+	100 us time scale.
+  </p></li>
+  <li style="clear: both"><p>
+	<img src="intr-so-many.png" style="height: 300px; float: right" />
+	Some positions glitch constantly.
+	100 us time scale.
+  </p></li>
+</ul>
+
+<pre class="outline" style="clear: both">
+Conclusions...
+- Mechanical switches are generally noisy
+- This batch is very noisy
+- Workarounds are brittle
+  - Interrupt latency dependent
+  - Read Step value, reject false postives
+  - But glitches false negatives, too
+- Buy better switches?
+  -OR- treat as quadrature encoder...
+</pre>
 
 
 </div>
@@ -1668,58 +1717,16 @@ TODO - Adjust LEDs in batches...
 
 <pre class="outline">
 - boot.py, main.py (check button)
-- threading (2nd core)
+- threading (and 2nd core)
 - asyncio
 - network
 - C extensions (note board examples)
+- ...
 </pre>
+
 
 </div>
 <!--++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
-<div class="part slide">
-<h2></h2>
-
-<pre class="outline">
-
-</pre>
-
-</div>
-<!--++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
-<div class="part slide">
-<h2></h2>
-
-<pre class="outline">
-
-</pre>
-
-</div>
-<!--++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
-<div class="part slide">
-<h2></h2>
-
-<pre class="outline">
-
-</pre>
-
-</div>
-<!--++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
-<div class="part slide">
-<h2></h2>
-
-<pre class="outline">
-
-</pre>
-
-</div>
-<!--++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
-<div class="part slide">
-<h2></h2>
-
-<pre class="outline">
-
-</pre>
-
-</div>
 <!--
 
 https://www.youtube.com/watch?v=hHec4qL00x0

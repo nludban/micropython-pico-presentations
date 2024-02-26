@@ -368,11 +368,64 @@ func RotaryStepDir() {
 }
 
 
+func QuadratureEncoder() {
+	fout, _ := os.Create("quadrature-a-b.svg")
+
+	var c *svg.SVG = svg.New(fout)
+
+	width := 500
+	height := 250
+	c.Start(width, height)
+	c.Roundrect(0, 0, width, height, 15, 15,
+		"fill:snow;stroke:black;stroke-width:3")
+
+	c.Gstyle("fill:none;stroke:black;stroke-width:3")
+
+	cx := 125
+	cy := 150
+	Sector(c, cx, cy, 72, 90 + 10, 180 + 10)
+	Sector(c, cx, cy, 72, 270 + 10, 0 + 10)
+	c.Circle(cx, cy, 72)
+	c.Circle(cx, cy, 10, "fill:black")
+	PolarText(c, cx, cy, 40, 15 + 45 * 1, "1")
+	PolarText(c, cx, cy, 40, 15 + 45 * 3, "0")
+	PolarText(c, cx, cy, 40, 15 + 45 * 5, "1")
+	PolarText(c, cx, cy, 40, 15 + 45 * 7, "0")
+
+	PolarSensor(c, cx, cy, 75, 0, "A")
+	PolarSensor(c, cx, cy, 75, 45, "B")
+	PolarArrow(c, cx, cy, 90, 120, 90, "(+1)")
+
+	cx = 350
+	cy = 150
+	Sector(c, cx, cy, 72, 90 - 10, 180 - 10)
+	Sector(c, cx, cy, 72, 270 - 10, 0 - 10)
+	c.Circle(cx, cy, 72)
+	c.Circle(cx, cy, 10, "fill:black")
+	PolarText(c, cx, cy, 40, -15 + 45 * 1, "1")
+	PolarText(c, cx, cy, 40, -15 + 45 * 3, "0")
+	PolarText(c, cx, cy, 40, -15 + 45 * 5, "1")
+	PolarText(c, cx, cy, 40, -15 + 45 * 7, "0")
+
+	PolarSensor(c, cx, cy, 75, 0, "A")
+	PolarSensor(c, cx, cy, 75, 45, "B")
+	PolarArrow(c, cx, cy, 90, 90, 120, "(-1)")
+
+
+	c.Gend()
+	c.End()
+	
+	fout.Close()
+
+}
+
+
 func main() {
 	ExternalLED()
 	ThreeExternalLEDs()
 	AnalogInput()
 	RotaryStepDir()
+	QuadratureEncoder()
 }
 
 /**/
